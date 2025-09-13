@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    parameters {
+        booleanParam(name: 'HEADLESS', defaultValue: true, description: 'Exécuter les tests en mode headless ?')
+    }
+
     stages {
         stage('Checkout') {
             steps {
@@ -12,7 +16,14 @@ pipeline {
         stage('Run_Test') {
             steps {
                 echo "🏃 Exécution des tests Maven..."
-                sh 'mvn clean test -Dchrome.headless=true'
+                script {
+                    // Exécution Maven en capturant le statut sans afficher les erreurs brutes
+                    def status = sh(script: "mvn clean test -Dchrome.headless=${params.HEADLESS} -q", returnStatus: true)
+                    if (status != 0) {
+                        echo "⚠️ Certains tests ont échoué, le build sera marqué comme UNSTABLE."
+                        currentBuild.result = 'UNSTABLE'
+                    }
+                }
             }
         }
     }
@@ -20,7 +31,9 @@ pipeline {
     post {
         always {
             echo "📊 Publication des rapports..."
+            // JUnit
             junit '**/target/surefire-reports/*.xml'
+            // Cucumber
             cucumber buildStatus: 'UNSTABLE', fileIncludePattern: '**/target/cucumber-reports/*.json'
         }
     }
