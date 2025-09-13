@@ -36,9 +36,11 @@ public static WebDriver initWebDriver() throws MalformedURLException{
             break;
     
         default:
-            throw new IllegalArgumentException(
+            /*throw new IllegalArgumentException(
                 "Navigateur non supporté :"+browser
             );
+            */
+            driver = new ChromeDriver();
     }
 
     return driver;

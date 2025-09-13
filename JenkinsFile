@@ -8,6 +8,7 @@ pipeline{
                 checkout scm
             }
         }
+
         stage("Run test"){
             steps{
             sh 'mvn clean test'
