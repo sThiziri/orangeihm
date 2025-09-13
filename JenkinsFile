@@ -12,7 +12,7 @@ pipeline {
         stage('Run_Test') {
             steps {
                 echo "🏃 Exécution des tests Maven..."
-                sh 'mvn clean test'
+                sh 'mvn clean test -Dchrome.headless=true'
             }
         }
     }
