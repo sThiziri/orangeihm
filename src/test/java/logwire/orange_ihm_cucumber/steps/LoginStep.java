@@ -5,6 +5,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.net.MalformedURLException;
 
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -18,7 +19,8 @@ public class LoginStep {
 
     @Before
     public void testSetup() throws MalformedURLException {
-        driver = DriverTool.initWebDriver();
+        //driver = DriverTool.initWebDriver();
+        driver = new ChromeDriver();
         login= new LoginPage(driver);
 
     }

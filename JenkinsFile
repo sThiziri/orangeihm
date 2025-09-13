@@ -1,74 +1,24 @@
-pipeline {
+pipeline{
     agent any
 
-    parameters {
-        choice(name: 'EXECUTION_MODE', choices: ['LOCAL', 'GRID'], description: 'Mode d’exécution')
-        choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'edge'], description: 'Navigateur cible')
-    }
-
-    stages {
-        stage('Checkout') {
-            steps {
+    stages{
+        stage("checkout"){
+            steps{
                 echo "📥 Récupération du code source..."
                 checkout scm
             }
         }
 
-        stage('Start Selenium Grid') {
-            when {
-                expression { params.EXECUTION_MODE == 'GRID' }
-            }
-            steps {
-                echo "🚀 Démarrage du Grid avec docker compose..."
-                sh 'docker compose -f docker-compose.yaml up -d'
-
-                echo "⏳ Attente que le hub soit prêt..."
-                script {
-                    int retries = 6
-                    boolean ready = false
-                    while(retries > 0 && !ready) {
-                        try {
-                            sh 'curl -s http://localhost:4444/status | grep -q "ready"'
-                            ready = true
-                        } catch (Exception e) {
-                            echo "Hub pas encore prêt, attente 5s..."
-                            sleep 5
-                            retries--
-                        }
-                    }
-                    if (!ready) error "Le Selenium Grid n’est pas prêt après 30s"
-                }
-            }
-        }
-
-        stage('Run Tests') {
-            steps {
-                echo "🧪 Lancement des tests (${params.BROWSER})..."
-                sh "mvn clean test -Dbrowser=${params.BROWSER}"
-            }
-            post {
-                always {
-                    echo "📊 Publication des rapports..."
-                    junit '**/target/surefire-reports/*.xml'
-                    cucumber buildStatus: 'UNSTABLE', fileIncludePattern: '**/target/cucumber-reports/*.json'
-                }
-            }
-        }
-
-        stage('Stop Selenium Grid') {
-            when {
-                expression { params.EXECUTION_MODE == 'GRID' }
-            }
-            steps {
-                echo "🛑 Arrêt du Grid..."
-                sh 'docker compose -f docker-compose.yaml down'
+        stage("Run test"){
+            steps{
+            sh 'mvn clean test'
             }
         }
     }
 
-    post {
+    post{
         always {
-            echo "✅ Pipeline terminé."
+            echo "✅ Pipeline terminé (local)"
         }
     }
 }
