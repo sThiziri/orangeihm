@@ -6,6 +6,7 @@ import java.net.MalformedURLException;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 
 import io.cucumber.java.After;
 import io.cucumber.java.Before;
@@ -19,8 +20,14 @@ public class LoginStep {
 
     @Before
     public void testSetup() throws MalformedURLException {
-        //driver = DriverTool.initWebDriver();
-        driver = new ChromeDriver();
+        // Configuration Chrome en headless
+        ChromeOptions options = new ChromeOptions();
+        options.addArguments("--headless=new"); // Headless moderne
+        options.addArguments("--disable-gpu");
+        options.addArguments("--window-size=1920,1080");
+
+        // Initialise le driver avec options
+        driver = new ChromeDriver(options);
         login= new LoginPage(driver);
 
     }
