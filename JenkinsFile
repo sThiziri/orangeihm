@@ -1,24 +1,78 @@
-pipeline{
+pipeline {
     agent any
 
-    stages{
-        stage("checkout"){
-            steps{
+    environment {
+        MAVEN_HOME = tool 'Maven3'
+        PATH = "${MAVEN_HOME}/bin:${env.PATH}"
+    }
+
+    parameters {
+        choice(name: 'EXECUTION_MODE', choices: ['LOCAL', 'GRID'], description: 'Mode d’exécution')
+        choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'edge'], description: 'Navigateur cible')
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
                 echo "📥 Récupération du code source..."
                 checkout scm
             }
         }
 
-        stage("Run test"){
-            steps{
-            sh 'mvn clean test'
+        stage('Start Selenium Grid') {
+            when {
+                expression { params.EXECUTION_MODE == 'GRID' }
+            }
+            steps {
+                echo "🚀 Démarrage du Grid..."
+                sh 'docker-compose up -d'
+
+                echo "⏳ Attente que le hub soit prêt..."
+                script {
+                    int retries = 6
+                    boolean ready = false
+                    while(retries > 0 && !ready) {
+                        try {
+                            sh 'curl -s http://localhost:4444/status | grep -q "ready"'
+                            ready = true
+                        } catch (Exception e) {
+                            echo "Hub pas encore prêt, attente 5s..."
+                            sleep 5
+                            retries--
+                        }
+                    }
+                    if (!ready) error "Selenium Grid non prêt après 30s"
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                echo "🧪 Lancement des tests (${params.BROWSER})..."
+                sh "mvn clean test -Dbrowser=${params.BROWSER}"
+            }
+            post {
+                always {
+                    junit '**/target/surefire-reports/*.xml'
+                    cucumber buildStatus: 'UNSTABLE', fileIncludePattern: '**/target/cucumber-reports/*.json'
+                }
+            }
+        }
+
+        stage('Stop Selenium Grid') {
+            when {
+                expression { params.EXECUTION_MODE == 'GRID' }
+            }
+            steps {
+                echo "🛑 Arrêt du Grid..."
+                sh 'docker-compose down'
             }
         }
     }
 
-    post{
+    post {
         always {
-            echo "✅ Pipeline terminé (local)"
+            echo "✅ Pipeline terminé."
         }
     }
 }
