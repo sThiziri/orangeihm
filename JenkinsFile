@@ -16,9 +16,11 @@ pipeline{
         }
     }
 
-    post{
-        always {
-            echo "✅ Pipeline terminé (local)"
-        }
-    }
+    post {
+                always {
+                    echo "📊 Publication des rapports..."
+                    junit '**/target/surefire-reports/*.xml'
+                    cucumber buildStatus: 'UNSTABLE', fileIncludePattern: '**/target/cucumber-reports/*.json'
+                }
+            }
 }
