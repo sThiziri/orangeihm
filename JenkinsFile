@@ -1,26 +1,27 @@
-pipeline{
+pipeline {
     agent any
 
-    stages{
-        stage("checkout"){
-            steps{
+    stages {
+        stage('Checkout') {
+            steps {
                 echo "📥 Récupération du code source..."
                 checkout scm
             }
         }
 
-        stage("Run test"){
-            steps{
-            sh 'mvn clean test'
+        stage('Run_Test') {
+            steps {
+                echo "🏃 Exécution des tests Maven..."
+                sh 'mvn clean test'
             }
         }
     }
 
     post {
-                always {
-                    echo "📊 Publication des rapports..."
-                    junit '**/target/surefire-reports/*.xml'
-                    cucumber buildStatus: 'UNSTABLE', fileIncludePattern: '**/target/cucumber-reports/*.json'
-                }
-            }
+        always {
+            echo "📊 Publication des rapports..."
+            junit '**/target/surefire-reports/*.xml'
+            cucumber buildStatus: 'UNSTABLE', fileIncludePattern: '**/target/cucumber-reports/*.json'
+        }
+    }
 }
