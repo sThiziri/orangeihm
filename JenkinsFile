@@ -19,8 +19,8 @@ pipeline {
                 expression { params.EXECUTION_MODE == 'GRID' }
             }
             steps {
-                echo "🚀 Démarrage du Grid..."
-                sh 'docker-compose up -d'
+                echo "🚀 Démarrage du Grid avec docker compose..."
+                sh 'docker compose -f docker-compose.yml up -d'
 
                 echo "⏳ Attente que le hub soit prêt..."
                 script {
@@ -36,7 +36,7 @@ pipeline {
                             retries--
                         }
                     }
-                    if (!ready) error "Selenium Grid non prêt après 30s"
+                    if (!ready) error "Le Selenium Grid n’est pas prêt après 30s"
                 }
             }
         }
@@ -48,6 +48,7 @@ pipeline {
             }
             post {
                 always {
+                    echo "📊 Publication des rapports..."
                     junit '**/target/surefire-reports/*.xml'
                     cucumber buildStatus: 'UNSTABLE', fileIncludePattern: '**/target/cucumber-reports/*.json'
                 }
@@ -60,7 +61,7 @@ pipeline {
             }
             steps {
                 echo "🛑 Arrêt du Grid..."
-                sh 'docker-compose down'
+                sh 'docker compose -f docker-compose.yml down'
             }
         }
     }
