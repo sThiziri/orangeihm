@@ -1,0 +1,21 @@
+pipeline{
+    agent any
+
+    stages{
+        stage("checkout"){
+            steps{
+                echo "📥 Récupération du code source..."
+                checkout scm
+            }
+        }
+        stage("Run test"){
+            sh 'mvn clean test'
+        }
+    }
+
+    post{
+        always {
+            echo "✅ Pipeline terminé (local)"
+        }
+    }
+}
