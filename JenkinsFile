@@ -20,7 +20,7 @@ pipeline {
             }
             steps {
                 echo "🚀 Démarrage du Grid avec docker compose..."
-                sh 'docker compose -f docker-compose.yml up -d'
+                sh 'docker compose -f docker-compose.yaml up -d'
 
                 echo "⏳ Attente que le hub soit prêt..."
                 script {
@@ -61,7 +61,7 @@ pipeline {
             }
             steps {
                 echo "🛑 Arrêt du Grid..."
-                sh 'docker compose -f docker-compose.yml down'
+                sh 'docker compose -f docker-compose.yaml down'
             }
         }
     }
