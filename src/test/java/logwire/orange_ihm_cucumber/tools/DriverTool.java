@@ -14,7 +14,7 @@ public class DriverTool {
 private static WebDriver driver;
 
 public static WebDriver initWebDriver() throws MalformedURLException{
-    String browser = System.getProperty("browser", "chrome"); 
+    String browser = System.getProperty("browser", "grid"); 
     switch (browser) {
         case "chrome":
             driver = new RemoteWebDriver(
