@@ -1,11 +1,6 @@
 pipeline {
     agent any
 
-    environment {
-        MAVEN_HOME = tool 'Maven3'
-        PATH = "${MAVEN_HOME}/bin:${env.PATH}"
-    }
-
     parameters {
         choice(name: 'EXECUTION_MODE', choices: ['LOCAL', 'GRID'], description: 'Mode d’exécution')
         choice(name: 'BROWSER', choices: ['chrome', 'firefox', 'edge'], description: 'Navigateur cible')
